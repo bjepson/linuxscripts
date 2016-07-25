@@ -61,13 +61,13 @@ send_to_plug() {
    ip="$1"
    port="$2"
    payload="$3"
-   echo -n "$payload" | base64 -d | nc -v $ip $port || echo couldn''t connect to $ip:$port, nc failed with exit code $?
+   echo -n "$payload" | base64 -D | nc -v $ip $port || echo couldn''t connect to $ip:$port, nc failed with exit code $?
 }
 
 decode(){
    code=171
    offset=4
-   input_num=`od --skip-bytes=$offset --address-radix=n -t u1 --width=9999`
+   input_num=`od -j $offset -A n -t u1 | perl -pe 's/\s+/ /g'`
    IFS=' ' read -r -a array <<< "$input_num"
    args_for_printf=""
    for element in "${array[@]}"
@@ -76,7 +76,7 @@ decode(){
      args_for_printf="$args_for_printf\x$(printf %x $output)"
      code=$element
    done
-     printf "$args_for_printf"
+     printf "$args_for_printf\n"
 }
 
 query_plug(){
